@@ -933,8 +933,8 @@
     </div>
     
     <!-- Load JavaScript -->
-    <script src="abu_dhabi_data.js"></script>
-    <script src="abu_dhabi_funnel.js"></script>
+    <script src="/abu_dhabi_data.js"></script>
+    <script src="/abu_dhabi_funnel.js"></script>
     
     <script>
         // Chart.js configuration
@@ -1118,15 +1118,32 @@
             } else {
                 // Multiple markets or "all" markets - use aggregated data
                 if (marketFilter === 'all') {
-                    // All markets selected - use original totals
+                    // All markets selected - use original totals, sorted by booking volume
                     if (verticalFilter === 'all') {
-                        filteredVerticals = {
-                            'ota': originalData.verticals.ota,
-                            'services': originalData.verticals.services,
-                            'private': originalData.verticals.private,
-                            'metasearch': originalData.verticals.metasearch,
-                            'airlines': originalData.verticals.airlines
-                        };
+                        // Get all verticals with Abu Dhabi data and sort by booking volume
+                        const allVerticalKeys = ['ota', 'services', 'private', 'metasearch', 'airlines', 'experience', 'ground', 'hotels', 'tour', 'car'];
+                        const allVerticalData = [];
+                        
+                        allVerticalKeys.forEach(key => {
+                            if (originalData.verticals[key] && originalData.verticals[key].bookings > 0) {
+                                allVerticalData.push({
+                                    key: key,
+                                    name: originalData.verticals[key].name,
+                                    bookings: originalData.verticals[key].bookings
+                                });
+                            }
+                        });
+                        
+                        // Sort by booking volume (descending)
+                        allVerticalData.sort((a, b) => b.bookings - a.bookings);
+                        
+                        // Add to filteredVerticals
+                        allVerticalData.forEach(vertical => {
+                            filteredVerticals[vertical.key] = {
+                                name: vertical.name,
+                                bookings: vertical.bookings
+                            };
+                        });
                     } else if (originalData.verticals[verticalFilter]) {
                         filteredVerticals[verticalFilter] = originalData.verticals[verticalFilter];
                     }
@@ -1340,16 +1357,38 @@
         
         // Initialize charts
         function initCharts(filtered = false) {
+            let defaultVerticals = {};
+            if (!filtered) {
+                // For initial load, show all verticals sorted by booking volume
+                const allVerticalKeys = ['ota', 'services', 'private', 'metasearch', 'airlines', 'experience', 'ground', 'hotels', 'tour', 'car'];
+                const allVerticalData = [];
+                
+                allVerticalKeys.forEach(key => {
+                    if (originalData.verticals[key] && originalData.verticals[key].bookings > 0) {
+                        allVerticalData.push({
+                            key: key,
+                            name: originalData.verticals[key].name,
+                            bookings: originalData.verticals[key].bookings
+                        });
+                    }
+                });
+                
+                // Sort by booking volume (descending)
+                allVerticalData.sort((a, b) => b.bookings - a.bookings);
+                
+                // Add to defaultVerticals
+                allVerticalData.forEach(vertical => {
+                    defaultVerticals[vertical.key] = {
+                        name: vertical.name,
+                        bookings: vertical.bookings
+                    };
+                });
+            }
+            
             const data = filtered ? getFilteredData() : { 
                 markets: originalData.markets, 
                 months: originalData.months,
-                verticals: {
-                    'ota': originalData.verticals.ota,
-                    'services': originalData.verticals.services,
-                    'private': originalData.verticals.private,
-                    'metasearch': originalData.verticals.metasearch,
-                    'airlines': originalData.verticals.airlines
-                },
+                verticals: defaultVerticals,
                 metric: 'bookings'
             };
             // Prepare market data
@@ -1788,17 +1827,36 @@
             // Reset metrics to original static values
             resetMetrics();
             
-            // Reset tables to show all rows
+            // Reset tables to show all rows with all verticals sorted by booking volume
+            let resetVerticals = {};
+            const allVerticalKeys = ['ota', 'services', 'private', 'metasearch', 'airlines', 'experience', 'ground', 'hotels', 'tour', 'car'];
+            const allVerticalData = [];
+            
+            allVerticalKeys.forEach(key => {
+                if (originalData.verticals[key] && originalData.verticals[key].bookings > 0) {
+                    allVerticalData.push({
+                        key: key,
+                        name: originalData.verticals[key].name,
+                        bookings: originalData.verticals[key].bookings
+                    });
+                }
+            });
+            
+            // Sort by booking volume (descending)
+            allVerticalData.sort((a, b) => b.bookings - a.bookings);
+            
+            // Add to resetVerticals
+            allVerticalData.forEach(vertical => {
+                resetVerticals[vertical.key] = {
+                    name: vertical.name,
+                    bookings: vertical.bookings
+                };
+            });
+            
             const defaultData = {
                 markets: originalData.markets,
                 months: originalData.months,
-                verticals: {
-                    'ota': originalData.verticals.ota,
-                    'services': originalData.verticals.services,
-                    'private': originalData.verticals.private,
-                    'metasearch': originalData.verticals.metasearch,
-                    'airlines': originalData.verticals.airlines
-                },
+                verticals: resetVerticals,
                 metric: 'bookings'
             };
             updateTables(defaultData);
