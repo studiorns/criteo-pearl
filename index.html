@@ -645,8 +645,13 @@
                         <option value="ota">Online Travel Agents</option>
                         <option value="services">Travel Services</option>
                         <option value="private">Private Accommodation</option>
+                        <option value="metasearch">Travel Metasearch</option>
                         <option value="airlines">Airlines</option>
+                        <option value="experience">Experience</option>
+                        <option value="ground">Ground/Cruise</option>
                         <option value="hotels">Hotels/Resorts</option>
+                        <option value="tour">Tour Operators</option>
+                        <option value="car">Car Rental</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -928,8 +933,8 @@
     </div>
     
     <!-- Load JavaScript -->
-    <script src="/abu_dhabi_data.js"></script>
-    <script src="/abu_dhabi_funnel.js"></script>
+    <script src="abu_dhabi_data.js"></script>
+    <script src="abu_dhabi_funnel.js"></script>
     
     <script>
         // Chart.js configuration
@@ -1077,15 +1082,29 @@
                 const marketVerticals = originalData.verticalsByMarket[marketFilter];
                 
                 if (verticalFilter === 'all') {
-                    // Show top verticals for this market
-                    const verticalKeys = ['ota', 'services', 'private', 'metasearch', 'airlines'];
-                    verticalKeys.forEach(key => {
+                    // Show all verticals for this market with data, sorted by booking volume
+                    const allVerticalKeys = ['ota', 'services', 'private', 'metasearch', 'airlines', 'experience', 'ground', 'hotels', 'tour', 'car'];
+                    const marketVerticalData = [];
+                    
+                    allVerticalKeys.forEach(key => {
                         if (marketVerticals[key] && marketVerticals[key] > 0) {
-                            filteredVerticals[key] = {
+                            marketVerticalData.push({
+                                key: key,
                                 name: originalData.verticals[key].name,
                                 bookings: marketVerticals[key]
-                            };
+                            });
                         }
+                    });
+                    
+                    // Sort by booking volume (descending)
+                    marketVerticalData.sort((a, b) => b.bookings - a.bookings);
+                    
+                    // Add to filteredVerticals
+                    marketVerticalData.forEach(vertical => {
+                        filteredVerticals[vertical.key] = {
+                            name: vertical.name,
+                            bookings: vertical.bookings
+                        };
                     });
                 } else {
                     // Show specific vertical for this market
@@ -1128,7 +1147,7 @@
                     });
                     
                     if (verticalFilter === 'all') {
-                        ['ota', 'services', 'private', 'metasearch', 'airlines'].forEach(key => {
+                        ['ota', 'services', 'private', 'metasearch', 'airlines', 'experience', 'ground', 'hotels', 'tour', 'car'].forEach(key => {
                             if (verticalSums[key] && verticalSums[key] > 0) {
                                 filteredVerticals[key] = {
                                     name: originalData.verticals[key].name,
