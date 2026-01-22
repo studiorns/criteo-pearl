@@ -144,7 +144,7 @@ function calculateConversionRate(from, to) {
 // Create overall funnel
 function createOverallFunnel() {
     const data = abuDhabiFunnelData.overall;
-    const avgCPB = 42.80; // Weighted average across markets (matches dashboard metric)
+    const avgCPB = 327.23; // Simple arithmetic average across markets (matches dashboard metric)
     
     return `
         <div class="funnel-wrapper">
